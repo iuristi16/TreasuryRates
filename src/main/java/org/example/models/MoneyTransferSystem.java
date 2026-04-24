@@ -44,7 +44,7 @@ public class MoneyTransferSystem {
         this.currencies = currencies;
     }
 
-    // --- toString (debugging) ---
+
 
     @Override
     public String toString() {
@@ -56,7 +56,7 @@ public class MoneyTransferSystem {
                 '}';
     }
 
-    // --- equals & hashCode (comparison დროს ძალიან გამოგადგება) ---
+
 
     @Override
     public boolean equals(Object o) {
@@ -67,11 +67,12 @@ public class MoneyTransferSystem {
 
         return Objects.equals(mtSystem, that.mtSystem) &&
                 Objects.equals(name, that.name) &&
+                Objects.equals(imageUrl, that.imageUrl) &&
                 Objects.equals(currencies, that.currencies);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mtSystem, name, currencies);
+        return Objects.hash(mtSystem, name, currencies, imageUrl);
     }
 }
