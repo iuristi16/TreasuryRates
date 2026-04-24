@@ -1,5 +1,4 @@
 package automationTestTreasury;
-
 import com.microsoft.playwright.*;
 import org.example.api.TreasuryApi;
 import org.example.models.ForwardRate;
