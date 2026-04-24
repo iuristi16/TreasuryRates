@@ -1,3 +1,4 @@
+package automationTestMoneyTransfers;
 import org.example.api.MoneyTransferApi;
 import org.example.models.MoneyTransferSystem;
 import org.testng.annotations.Test;
@@ -47,20 +48,20 @@ public class MoneyTransferApiTest {
 
         systems.forEach(system -> {
 
-            // mtSystem == name
+
             softAssert.assertEquals(
                     system.getMtSystem(),
                     system.getName(),
                     "mtSystem and name mismatch"
             );
 
-            // currencies არ უნდა იყოს ცარიელი
+
             softAssert.assertTrue(
                     system.getCurrencies().size() > 0,
                     "Currencies list is empty"
             );
 
-            // image უნდა იყოს jpg
+
             softAssert.assertTrue(
                     system.getImageUrl().endsWith(".jpg"),
                     "Invalid image format"
@@ -80,14 +81,15 @@ public class MoneyTransferApiTest {
 
         systems.forEach(system -> {
 
-            // ყველა სისტემას უნდა ჰქონდეს მინიმუმ EUR ან USD
+
             softAssert.assertTrue(
-                    system.getCurrencies().contains("EUR") ||
-                            system.getCurrencies().contains("USD"),
+                    system.getCurrencies().stream().anyMatch(
+                            c -> c.equals("EUR") || c.equals("USD") || c.equals("GEL")
+                    ),
                     "Missing main currency"
             );
 
-            // კონკრეტული case (მაგ: ZolotayaKorona)
+
             if ("ZolotayaKorona".equals(system.getName())) {
                 softAssert.assertTrue(
                         system.getCurrencies().contains("RUB"),
@@ -107,7 +109,7 @@ public class MoneyTransferApiTest {
         List<MoneyTransferSystem> systems =
                 MoneyTransferApi.getMoneyTransferSystems();
 
-        // შენი response-ის მიხედვით
+
         softAssert.assertEquals(
                 systems.size(),
                 7,

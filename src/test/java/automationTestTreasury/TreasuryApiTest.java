@@ -1,3 +1,5 @@
+package automationTestTreasury;
+
 import org.example.api.TreasuryApi;
 import org.example.models.ForwardRatesResponse;
 import org.example.models.Rate;

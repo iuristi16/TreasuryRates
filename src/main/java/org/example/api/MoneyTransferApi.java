@@ -1,8 +1,6 @@
 package org.example.api;
-
 import io.restassured.RestAssured;
 import org.example.models.MoneyTransferSystem;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,7 +22,7 @@ public class MoneyTransferApi {
                 .get()
                 .then()
                 .statusCode(200)
-                .contentType("application/json") // 🔥 კრიტიკული
+                .contentType("application/json")
                 .extract()
                 .as(MoneyTransferSystem[].class);
 
