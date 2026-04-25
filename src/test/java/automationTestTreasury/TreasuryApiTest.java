@@ -1,5 +1,4 @@
 package automationTestTreasury;
-
 import org.example.api.TreasuryApi;
 import org.example.models.ForwardRatesResponse;
 import org.example.models.Rate;
@@ -19,6 +18,16 @@ public class TreasuryApiTest {
         softAssert.assertNotNull(response, "Response is null");
         softAssert.assertNotNull(response.getRates(), "Rates is null");
         softAssert.assertNotNull(response.getUpdateDate(), "Update date is null");
+        response.getRates().forEach(rate -> {
+            softAssert.assertNotNull(rate.getIso(), "ISO is null");
+            softAssert.assertNotNull(rate.getForwardRates(), "forwardRates is null");
+
+            rate.getForwardRates().forEach(fr -> {
+                softAssert.assertNotNull(fr.getIso1(), "iso1 is null");
+                softAssert.assertNotNull(fr.getIso2(), "iso2 is null");
+                softAssert.assertNotNull(fr.getPeriod(), "period is null");
+            });
+        });
 
         softAssert.assertAll();
 

@@ -1,9 +1,9 @@
-package baseTest;
+package basetreasury;
 import com.microsoft.playwright.*;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
-public class BaseTest {
+public class TreasuryBaseTest {
 
     protected Playwright playwright;
     protected Browser browser;
@@ -14,12 +14,11 @@ public class BaseTest {
 
         playwright = Playwright.create();
 
-        browser = playwright.chromium().launch(
-                new BrowserType.LaunchOptions()
-                        .setHeadless(false));
+        browser = playwright.chromium()
+                .launch(new BrowserType.LaunchOptions().setHeadless(false));
         page = browser.newPage();
-        page.navigate("https://tbcbank.ge/ka/other-products/money-transfers");
+        page.navigate("https://tbcbank.ge/ka/treasury-products");
+
 
     }
-
-    }
+}
