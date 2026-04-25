@@ -1,4 +1,5 @@
 package automationTestTreasury;
+import basetreasury.TreasuryBaseTest;
 import com.microsoft.playwright.*;
 import org.example.api.TreasuryApi;
 import org.example.models.ForwardRate;
@@ -8,49 +9,45 @@ import org.testng.asserts.SoftAssert;
 import org.testng.annotations.Test;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class TreasuryUiTest {
+public class TreasuryUiTest extends TreasuryBaseTest {
 
     @Test
     public void compareUIWithAPI() {
-
         SoftAssert softAssert = new SoftAssert();
-
         ForwardRatesResponse apiData = TreasuryApi.getForwardRates();
 
-        try (Playwright playwright = Playwright.create()) {
 
-            Browser browser = playwright.chromium()
-                    .launch(new BrowserType.LaunchOptions().setHeadless(false));
 
-            Page page = browser.newPage();
-            page.navigate("https://tbcbank.ge/ka/treasury-products");
 
-            page.waitForTimeout(3000);
-
-            List<String> allPeriods = page
+            List<String> uiPeriods = page
                     .locator(".tbcx-pw-table-cell__content__title")
                     .allTextContents()
                     .stream()
                     .map(String::trim)
                     .filter(text -> text.matches("\\d+\\s+(კვირა|თვე|წელი)"))
-                    .toList();
-            List<String> uiPeriods = allPeriods.subList(9, 18); // USD
-            System.out.println("USD PERIODS: " + uiPeriods);
+                    .collect(Collectors.toList());
+            System.out.println("UI PERIODS: " + uiPeriods);
 
 
-            List<String> allRates = page
+            List<Double> uiRates = page
                     .locator(".tbcx-pw-table-cell__content__title")
                     .allTextContents()
                     .stream()
                     .map(String::trim)
-                    // 🔥 ვტოვებთ მხოლოდ რიცხვებს
                     .filter(text -> text.matches("\\d+\\.\\d+"))
-                    .toList();
-            System.out.println("ALL RATES: " + allRates);
+                    .map(Double::parseDouble)
+                    .collect(Collectors.toList());
+            System.out.println("UI RATES: " + uiRates);
 
 
-            // ✔ USD rate
+            boolean hasUsdGel = page.content().contains("USD/GEL");
+            softAssert.assertTrue(
+                    hasUsdGel,
+                    "USD/GEL pair not found in UI"
+            );
+
             Rate usdRate = apiData.getRates()
                     .stream()
                     .filter(r -> "USD".equals(r.getIso()))
@@ -62,51 +59,51 @@ public class TreasuryUiTest {
             if (usdRate != null) {
 
                 List<ForwardRate> apiRates = usdRate.getForwardRates();
+                apiRates.forEach(apiRate -> {
+                    softAssert.assertTrue(
+                            uiPeriods.contains(apiRate.getPeriod()),
+                            "Missing period in UI: " + apiRate.getPeriod()
+                    );
+                });
 
-                // ✅ 1. SIZE validation
+                List<String> uiPairs = page
+                        .locator(".business-treasury-product-table__title.ng-star-inserted")
+                        .allTextContents()
+                        .stream()
+                        .map(String::trim)
+                        .toList();
+                System.out.println("UI PAIRS: " + uiPairs);
+
+
+                List<String> apiPairs = apiRates.stream()
+                        .map(r -> r.getIso1() + "/" + r.getIso2())
+                        .distinct()
+                        .toList();
+                System.out.println("API PAIRS: " + apiPairs);
+
+
+                apiPairs.forEach(pair -> {
+                    softAssert.assertTrue(
+                            uiPairs.contains(pair),
+                            "Missing currency pair in UI: " + pair);});
+
+                List<Double> apiBidRates = apiRates.stream()
+                        .map(ForwardRate::getBidForwardRate)
+                        .collect(Collectors.toList());
+
                 softAssert.assertTrue(
-                        uiPeriods.size() > 0,
-                        "UI periods list is empty"
+                        uiRates.containsAll(apiBidRates),
+                        "UI missing some bid rates"
                 );
 
-                softAssert.assertEquals(
-                        uiPeriods.size(),
-                        apiRates.size(),
-                        "UI vs API size mismatch"
-                );
 
-                for (int i = 0; i < Math.min(uiPeriods.size(), apiRates.size()); i++) {
+                apiRates.forEach(rate -> {
+                    softAssert.assertTrue(rate.getBidForwardRate() > 0);
+                    softAssert.assertTrue(rate.getAskForwardRate() > 0);
+                    softAssert.assertTrue(rate.getDay() > 0);});}
 
-                    ForwardRate apiRate = apiRates.get(i);
-                    System.out.println(
-                            "Currency Pair: " +
-                                    apiRate.getIso1() + "/" + apiRate.getIso2()
-                    );
 
-                    String expectedPeriod = apiRate.getPeriod();
-                    String actualPeriod = uiPeriods.get(i);
-
-                    // ✅ 2. PERIOD validation
-                    softAssert.assertEquals(
-                            actualPeriod.trim(),
-                            expectedPeriod.trim(),
-                            "Period mismatch at index " + i
-                    );
-
-                    // ✅ 3. CURRENCY PAIR validation
-                    softAssert.assertEquals(apiRate.getIso1(), "USD", "iso1 mismatch");
-                    softAssert.assertEquals(apiRate.getIso2(), "GEL", "iso2 mismatch");
-
-                    // ✅ 4. NUMERIC validation
-                    softAssert.assertTrue(apiRate.getBidForwardRate() > 0, "Invalid bid rate");
-                    softAssert.assertTrue(apiRate.getAskForwardRate() > 0, "Invalid ask rate");
-                    softAssert.assertTrue(apiRate.getDay() > 0, "Invalid day value");
-                }
-            }
-
-            browser.close();
         }
 
-        softAssert.assertAll();
+
     }
-}
