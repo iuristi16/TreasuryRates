@@ -21,5 +21,6 @@ public class TreasuryApi {
                 .contentType("application/json")
                 .extract()
                 .as(ForwardRatesResponse.class);
+
     }
 }

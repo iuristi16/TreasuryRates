@@ -76,7 +76,6 @@ public class MoneyTransferUITest  extends BaseTest {
             System.out.println();
             boolean allNotEmpty = uiCurrencies.stream()
                     .allMatch(text -> !text.trim().isEmpty());
-
             if (!allNotEmpty) {
                 throw new AssertionError("Some currency texts are empty!");
             }

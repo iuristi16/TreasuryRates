@@ -21,7 +21,7 @@ public class MoneyTransferApiTest {
 
         systems.forEach(system -> {
 
-            // ✅ FIELD VALIDATION (ეს აკლდა სწორად)
+
             softAssert.assertNotNull(system.getMtSystem(), "mtSystem is null");
             softAssert.assertFalse(system.getMtSystem().isBlank(), "mtSystem is empty");
 
